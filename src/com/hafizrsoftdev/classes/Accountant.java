@@ -1,119 +1,114 @@
 package com.hafizrsoftdev.classes;
 
-import java.util.ArrayList;
+import com.hafizrsoftdev.classes.interfaces.CanBeSupported;
+import com.hafizrsoftdev.classes.interfaces.CanCheckInCode;
+import com.hafizrsoftdev.classes.interfaces.CanManageAccountant;
+import com.hafizrsoftdev.classes.interfaces.CanSupportTeam;
 
-/**
- * Created by Hafiz on 3/4/2022.
- */
-public class Accountant extends BusinessEmployee /*implements GetAccountant*/{
-//    Class Field
-    public ArrayList<TechnicalLead>accountSupportList;
-    public int accountSupportLimit;
-    public ArrayList<BusinessLead> manager;
-    public double bonusBudget;
-//    Constructor Method
-    public Accountant (String n,int i){
-        this.name = n;
-        this.ID = i;
-        this.baseSalary = 50000;
-        this.bonusBudget = 0;
-        this.accountSupportList = new ArrayList<>();
-        this.accountSupportLimit = 2;
-        manager = new ArrayList<>(1);
+public class Accountant extends BusinessEmployee implements CanSupportTeam{ 
+	
+//	CLASS FIELD
+	private int employeeID;
+	private String name;
+	private double baseSalary;
+	private double bonusBudget;
+    private CanBeSupported teamSupported;
+    private CanManageAccountant manager;
+
+//  CONSTRUCTOR METHOD
+    public Accountant (String name){
+    	this.employeeID = Employee.assignID();
+        this.name = name;
+        this.baseSalary = super.baseSalary;
     }
-//
-    public double getBaseSalary(){
-        return this.baseSalary;
+
+//  EMPLOYEE INHERITED CLASS METHODS: TOTAL - 07 
+    @Override
+    public boolean equals(Employee other) {
+        return this.employeeID == (other).getEmployeeID();
     }
-    public double setBaseSalary (double amendBaseSalary){
-        this.baseSalary = amendBaseSalary;
-        return amendBaseSalary;
+
+    @Override
+    public String toString() {
+        return this.employeeID + " " + this.name;
     }
-    public String getName(){
-        return this.name;
-    }
-    public int getEmployeeID() {
-        return this.ID;
-    }
-    public Employee getManager(){
-        if (!this.manager.isEmpty())
-        return manager.get(0);
-        else return null;
-    }
-    public boolean equals (Employee other) {
-        return this.ID == (other).ID;
-    }
-    public String toString(){
-        return this.ID + " " + this.name ;
-    }
+
+    @Override
     public String employeeStatus() {
-        return ID + " " + name + " with a budget of " + bonusBudget + " is supporting the following Technical Lead's: " + this.accountSupportList ;
-//        ID, name, the size of their currently managed budget and the name of the TechnicalLead they are currently supporting.
-//        Example: "1 Kasey with a budget of 22500.0 is supporting Satya Nadella"
+    	if (this.getTeamSupported() == null)
+    		return (this.employeeID + " " + this.name + " with a budget of " + this.bonusBudget 
+            		+ " is not supporting any Technical Lead");
+    	else
+    		return (this.employeeID + " " + this.name + " with a budget of " + this.bonusBudget 
+    				+ " is supporting the following Technical Lead's: " + this.getTeamSupported());
     }
-
-//  Accountant Class Methods
-    public double getBonusBudget () {
-        return this.bonusBudget;
+    
+    @Override
+   	public int getEmployeeID() {
+   		return this.employeeID;
+   	}
+    
+    @Override
+    public String getName() {
+    	return this.name;
     }
-
-    public void supportTeam(TechnicalLead lead) {
-        if (accountSupportList.size() < accountSupportLimit) {
-            accountSupportList.add(lead);
-            lead.accountant.add(this);
-            for (int i = 0; i < lead.directReport.size(); i++) {
-                this.bonusBudget += lead.directReport.get(i).getBaseSalary() * 1.1;
-                if (this.getManager() != null) {
-                    var x = (BusinessLead) this.getManager();
-                    double bonusBudgetGain = lead.directReport.get(i).getBaseSalary() * 1.1;
-                    x.setBonusBudget(x.bonusBudget+=bonusBudgetGain);
-                }
-            }
-        } else if (accountSupportList.size() == accountSupportLimit) {
-            System.out.println("\nKindly reassigned to an available Accountant.\n-Accountant reached supportLimit.");
-        }
+    
+    @Override
+    public double getBaseSalary() {
+    	return this.baseSalary;
     }
-        //    public void supportTeam(TechnicalLead lead)
-//Should allow a reference to a TechnicalLead to be passed and saved. Once this happens the Accountant's bonus budget
-// should be updated to be the total of each SoftwareEngineer's base salary that reports to that TechnicalLead plus 10%.
-
-//For example, if the TechnicalLead supports 2 SoftwareEngineers, each with a salary of 75000, the Accountant's budget
-// should be 150000 + 15000 for a total of 165000
-
-    public TechnicalLead[] getTeamSupported() {
-        TechnicalLead[] teamSupported;
-        if (this.accountSupportList.isEmpty()){
-            return null;
-        } else {
-            teamSupported = new TechnicalLead[this.accountSupportList.size()];
-            for (int i = 0; i < this.accountSupportList.size(); i++){
-                teamSupported[i] = this.accountSupportList.get(i);
-            }
-        } return teamSupported;
+    
+    @Override
+    public Employee getManager() {
+        return (Employee)this.manager;
     }
-//
-//    public TechnicalLead getTeamSupported()
-//Should return a reference to the TechnicalLead that this Accountant is currently supporting.
-// If they have not been assigned a TechnicalLead null should be returned
-    public boolean approveBonus (double bonus) {
-        boolean result = false;
-        if(this.accountSupportList.isEmpty()){
-            System.out.println("\nAccountant ID: " +this+ "is not assigned any supportTeam." +
-                    "\nKindly consult Business Lead for official assignment of Technical Lead;support Team.");
-        }else if (20%(this.getBonusBudget()) <= bonus){
-            result = true;
-            }
-        return result;
-    }
-//  public boolean approveBonus(double bonus)
-//Should take in a suggested bonus amount and check if there is still enough room in the budget.
-//If the bonus is greater than the remaining budget, false should be returned, otherwise true.
-//If the accountant is not supporting any team false should be returned.
-//    public Accountant getAccountant() {
-//    if (engineer.accountant.isEmpty()) {
-//        return getAccountant();
-//    } else return engineer.();
-//    }
+    
+//	BUSINESS EMPLOYEE CLASS METHOD: TOTAL - 01
+	@Override
+	public double getBonusBudget() {
+		return this.bonusBudget;	
+	}
+	
+//	ACCOUNTANT CLASS METHOD: TOTAL - 05
+	public void supportTeam(TechnicalLead lead) {
+		if(this.getTeamSupported() == null) {
+			this.teamSupported = lead;
+			lead.setAccountant(this);
+			for(CanCheckInCode engineer:lead.getDirectReport()) 
+				this.bonusBudget += ((SoftwareEngineer) engineer).getBaseSalary() *1.1;	
+		}else
+			System.out.println("\n(" + this + ") is already supporting a Technical Lead."
+					+ "\nKindly reassign to an available Accountant.");		
+	}
+	
+	public boolean approveBonus (double bonus) {
+		boolean bonusApproved = false;
+		if(this.getTeamSupported() == null)
+			System.out.println("\nAccountant ID: " + this + "is not assigned any supportTeam." 
+								+ "\nKindly consult Business Lead for official assignment of "
+								+ "Technical Lead;support Team.");
+		else if (20%(this.getBonusBudget()) >= bonus) {
+			System.out.println("Bonus Amount of " + bonus + " is approved by (" + this + ")");
+			bonusApproved = true;
+		}
+		else {
+			System.out.println("Max Bonus Amount allowed: 20% of bonusBudget.");
+			bonusApproved = false;
+		}
+		return bonusApproved;
+	}
+	
+	public TechnicalLead getTeamSupported() {
+		return (TechnicalLead) this.teamSupported;
+	}
+	
+	public void setBonusBudget(double bonusBudget) {
+		this.bonusBudget = bonusBudget;	
+	}
+	
+	public void setManager(BusinessLead manager) {
+		this.manager = manager;
+	}
 }
 
 

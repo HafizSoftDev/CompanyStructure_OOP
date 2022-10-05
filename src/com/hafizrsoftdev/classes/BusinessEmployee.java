@@ -1,13 +1,18 @@
 package com.hafizrsoftdev.classes;
 
-/**
- * Created by Hafiz on 3/4/2022.
- */
 public abstract class BusinessEmployee extends Employee{
-//    Class Field
-    double bonusBudget;
-//
-
-//
+	
+//  CLASS FIELD
+	protected double baseSalary = 50000;
+    
+//	BUSINESS EMPLOYEE CLASS METHODS: TOTAL - 01
+	abstract double getBonusBudget();
+	
+//  EMPLOYEE INHERITED CLASS METHODS: TOTAL - 01
+    @Override
+    public String employeeStatus() {
+    	return (this.getEmployeeID() + " " + this.getName() 
+    			+ " with a budget of " +  this.getBonusBudget());	
+    }
 }
 
