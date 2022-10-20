@@ -3,7 +3,7 @@ package com.hafizrsoftdev.classes;
 public abstract class BusinessEmployee extends Employee{
 	
 //  CLASS FIELD
-	protected double baseSalary = 50000;
+	final static double baseSalary = 50000;
     
 //	BUSINESS EMPLOYEE CLASS METHODS: TOTAL - 01
 	abstract double getBonusBudget();
@@ -12,7 +12,8 @@ public abstract class BusinessEmployee extends Employee{
     @Override
     public String employeeStatus() {
     	return (this.getEmployeeID() + " " + this.getName() 
-    			+ " with a budget of " +  this.getBonusBudget());	
+    			+ " with a budget of " +  CurrencyConverter.convertToCurrency(this.getBonusBudget()));	
     }
+    
 }
 

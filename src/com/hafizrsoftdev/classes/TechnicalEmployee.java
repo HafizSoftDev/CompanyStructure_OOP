@@ -3,7 +3,7 @@ package com.hafizrsoftdev.classes;
 public abstract class TechnicalEmployee extends Employee{
 	
 //  CLASS FIELD
-	protected double baseSalary = 75000;
+	final static double baseSalary = 75000;
     
 //	TECHNICAL EMPLOYEE CLASS METHODS: TOTAL - 01	
     abstract int getSuccessfulCheckIns();

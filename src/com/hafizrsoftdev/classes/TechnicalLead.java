@@ -21,7 +21,7 @@ public class TechnicalLead extends TechnicalEmployee implements CanManageEnginee
     public TechnicalLead(String name) {
         this.name = name;
         this.employeeID = Employee.assignID();
-        this.baseSalary = super.baseSalary * 1.3;
+        this.baseSalary = TechnicalEmployee.baseSalary * 1.3;
         this.headCount = 4;
         this.directReport = new ArrayList<>(4);
     }
@@ -81,14 +81,28 @@ public class TechnicalLead extends TechnicalEmployee implements CanManageEnginee
     	return addedToReport;
     }
     
+    public boolean addReport(SoftwareEngineer a,SoftwareEngineer b,SoftwareEngineer c,SoftwareEngineer d) {
+    	boolean addedToReport = false;
+    	addedToReport = addReport(a);
+    	addedToReport = addReport(b);
+    	addedToReport = addReport(c);
+    	addedToReport = addReport(d);
+    	return addedToReport;
+    }
+    
     public boolean approveCheckIn(SoftwareEngineer e) {
         return (directReport.contains(e) && e.getCodeAccess());
     }
 	
-    public boolean requestBonus(Employee e, double bonus) {
+    @SuppressWarnings("unlikely-arg-type")
+	public boolean requestBonus(Employee e, double bonus) {
     	boolean bonusGranted = false;
-    	BusinessLead businessManager = (BusinessLead) this.getAccountant().getManager();
-    	bonusGranted = businessManager.approveBonus(e, bonus);
+    	
+    	if(this.getAccountant() != null && (this.getDirectReport().contains(e))) {
+    		BusinessLead businessManager = ((BusinessLead)(this.getAccountant().getManager()));
+        	bonusGranted = businessManager.approveBonus(e, bonus);	
+    	}else if(this.getAccountant() == null)
+    		System.out.println("Technical Lead must be supported by an accountant before requesting bonus.");
     	return bonusGranted;
     }
     
@@ -100,7 +114,7 @@ public class TechnicalLead extends TechnicalEmployee implements CanManageEnginee
     			toPrint.append(((SoftwareEngineer)engineer).employeeStatus() + "\n");
     	
     	}else
-    		toPrint.append(this.employeeStatus() + " and no direct reports yet.");
+    		toPrint.append(this.employeeStatus() + " and no direct reports yet.\n");
     		
     	return toPrint;
     }    

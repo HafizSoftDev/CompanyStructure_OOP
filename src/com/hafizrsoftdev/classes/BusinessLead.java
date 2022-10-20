@@ -19,7 +19,7 @@ public class BusinessLead extends BusinessEmployee implements CanManageAccountan
     public BusinessLead (String name){
     	this.employeeID = Employee.assignID();
 	    this.name = name;
-	    this.baseSalary = super.baseSalary*(2);
+	    this.baseSalary = BusinessEmployee.baseSalary*(2);
 	    this.headCount = 10;
 	    this.directReport = new ArrayList<>();
     }
@@ -34,8 +34,8 @@ public class BusinessLead extends BusinessEmployee implements CanManageAccountan
     public String toString() {
         return this.employeeID + " " + this.name;
     }
-    
-    @Override
+
+	@Override
 	public int getEmployeeID() {
 		return this.employeeID;
 	}
@@ -57,69 +57,91 @@ public class BusinessLead extends BusinessEmployee implements CanManageAccountan
 	
     @Override
 	public boolean addReport(Accountant e, TechnicalLead supportTeam) {
-    	if(this.hasHeadCount()) {
+    	boolean directReportAdded = false;
+    	if(this.hasHeadCount() && !(this.directReport.contains(e))) {
     		this.directReport.add(e);
-    		this.bonusBudget += e.getBaseSalary()/10 * 11;
+    		this.bonusBudget += e.getBaseSalary()/100 * 110;
     		e.supportTeam(supportTeam);
-    	return true;	
+    		e.setManager(this);
+    		directReportAdded = true;	
+    	}else if(this.hasHeadCount() && this.directReport.contains(e)) {
+    		System.out.println("Unable to addReport: Accountant exists in BuinessLead's DirectReport List!"
+    				+ "\nAssignment of supportTeam to Accountant is still in effect.");
+    		e.supportTeam(supportTeam);
+    		directReportAdded = false;
     	}else
-    		return false;
+    		System.out.println("HeadCount Avaibility => " + this.hasHeadCount());
+    	return directReportAdded;
     }
-    
+        
     public boolean requestBonus(Employee e, double bonus) {
         boolean reqBonus;
+        double bonusBudget_Pre_Deduction = this.getBonusBudget();
+        
         if(e.getManager().equals(this)) {
-        	if(20%(this.getBonusBudget()) >= bonus) {
+        	double accountantBonusCap = e.getBaseSalary()/100 *110;
+        	double existingBonus = e.getBonus();
+			double eligibleBonusAmount = accountantBonusCap - existingBonus;
+        	
+        	if(eligibleBonusAmount >= bonus) {
                 this.setBonusBudget(this.bonusBudget-=bonus);
-                e.setBonus(bonus);
+                e.setBonus(e.getBonus() + bonus);
                 reqBonus = true;
-                System.out.println("Bonus Budget have been Approved by Business Lead ID: " 
-        				+ this + "\nThank you!");
+                
+                System.out.println("\n(Accountant) " + e + " awarded bonus amount of " 
+        				+ CurrencyConverter.convertToCurrency(e.getBonus()) + " [Bonus granted by (BusinessLead) " + this + "]"
+        				+ "\n(BusinessLead) " + this 
+        				+ " [Revised Bonus Budget: " + CurrencyConverter.convertToCurrency(bonusBudget_Pre_Deduction) 
+        				+ " => " + CurrencyConverter.convertToCurrency(this.getBonusBudget()) + "]");
             } else {
-            	System.out.println("Max Bonus Amount allowed: 20% of bonusBudget.");
+            	System.out.println("\nRequest of Bonus Amount of " + CurrencyConverter.convertToCurrency(bonus) 
+        		+ " rejected. \nEmployee's Bonus Amount accrued cannot exceed 110% of baseSalary.");
             	reqBonus = false;
             }
         }else {
-        	System.out.println("Employee does not report to " + this);
+        	System.out.println("/nEmployee does not report to " + this);
         	reqBonus = false;
         }
         return reqBonus;
     }
       
     public boolean approveBonus(Employee e,double bonus) {
-    	Accountant e_Accountant = (((TechnicalLead) e.getManager()).getAccountant());
-    	boolean bonusApproved = e_Accountant.approveBonus(bonus);
-    	double bonusBudget_Pre_Deduction = e_Accountant.getBonusBudget();
+    	boolean bonusGranted = false;
+    	double engineerBonusCap = e.getBaseSalary()/100 *110;
     	
-    	if(this.directReport.contains(e_Accountant) 
-    			&& bonusApproved == true) {
-    		double bonusAwarded = e.getBonus() + bonus;
-			double bonusBudget_Post_Deduction = (bonusBudget_Pre_Deduction - bonus);
-			e.setBonus(bonusAwarded);
-			e_Accountant.setBonusBudget(bonusBudget_Post_Deduction);
-    		System.out.println("Bonus have been Approved by Business Lead: (" + this + ")"
-    				+ "\n (" + e + ") awarded" + e.getBonus() 
-    				+ "\nRevised Bonus Budget of (" + e_Accountant + ") from" 
-    				+ bonusBudget_Pre_Deduction + " to: " + e_Accountant.getBonusBudget()  
-    				+ "\nThank you!");
-    		
-    	}else if(bonusApproved == false) 
-    		System.out.println("Bonus Budget was not Approved by Business Lead (" 
-    				+ this + ") \nMax Bonus Amount allowed is 20% of accountant's bonusBudget: "
-    				+ 20%(bonusBudget_Pre_Deduction));
+    	if(engineerBonusCap < e.getBonus() + bonus)
+    		System.out.println("\nRequest of Bonus Amount of " + CurrencyConverter.convertToCurrency(bonus) 
+    		+ " rejected. \nEmployee's Bonus Amount accrued cannot exceed 110% of baseSalary.");
     	
-    	else
-    		System.out.println("Bonus Budget not managed by this Finance Team.");
-    	
-    	return bonusApproved;
+    	else if(e.getManager() != null) {
+    		Accountant e_Accountant = (((TechnicalLead) e.getManager()).getAccountant());	
+        	boolean bonusApproved = e_Accountant.approveBonus(bonus);
+        	double bonusBudget_Pre_Deduction = e_Accountant.getBonusBudget();    
+        	
+        	if(this.directReport.contains(e_Accountant) && bonusApproved == true) {
+        		double bonusAwarded = e.getBonus() + bonus;
+    			double bonusBudget_Post_Deduction = (bonusBudget_Pre_Deduction - bonus);
+    			e.setBonus(bonusAwarded);
+    			e_Accountant.setBonusBudget(bonusBudget_Post_Deduction);
+    			
+        		System.out.println("\n(SoftwareEngineer) " + e + " awarded bonus amount of " 
+        				+ CurrencyConverter.convertToCurrency(e.getBonus()) + " [Bonus granted by (BusinessLead) " + this + "]"
+        				+ "\n(Accountant) " + e_Accountant 
+        				+ " [Revised Bonus Budget: " + CurrencyConverter.convertToCurrency(bonusBudget_Pre_Deduction) 
+        				+ " => " + CurrencyConverter.convertToCurrency(e_Accountant.getBonusBudget()) + "]");
+        		bonusGranted = true;        	
+        	}
+    	}else
+    		System.out.println("\nBonus Budget not managed by this Finance Team.");
+    	return bonusGranted;
     }
     
-    public StringBuffer getTeamStatus() {
+	public StringBuffer getTeamStatus() {
     	StringBuffer toPrint = new StringBuffer();
     	if (!this.directReport.isEmpty()){
-    		toPrint.append(this.employeeStatus() + " and is managing:\n");
+    		toPrint.append(this.employeeStatus() + " and is managing:\n\n");
     		for(CanSupportTeam accountant:directReport) {
-    			toPrint.append(((Accountant)accountant).employeeStatus() + "\n");
+    			toPrint.append(((Accountant)accountant).employeeStatus()+"\n");
     		}
     	}else {
     		toPrint.append(this.employeeStatus() + " and no direct reports yet.");
@@ -127,6 +149,10 @@ public class BusinessLead extends BusinessEmployee implements CanManageAccountan
     	return toPrint;
     }
 	
+    public ArrayList<CanSupportTeam> getDirectReport() {
+		return directReport;
+	}
+    
     @Override
     public double getBonusBudget () {
     	return this.bonusBudget;
@@ -135,5 +161,5 @@ public class BusinessLead extends BusinessEmployee implements CanManageAccountan
     public void setBonusBudget(double bonusBudget){
         this.bonusBudget = bonusBudget;
     }
-    
+
 }

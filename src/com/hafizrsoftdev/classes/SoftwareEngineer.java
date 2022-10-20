@@ -16,7 +16,7 @@ public class SoftwareEngineer extends TechnicalEmployee implements CanCheckInCod
 //  CONSTRUCTOR METHOD
     public SoftwareEngineer(String name) {
         this.name = name;
-        this.baseSalary = super.baseSalary;
+        this.baseSalary = TechnicalEmployee.baseSalary;
         this.employeeID = Employee.assignID();
     }
 
@@ -54,6 +54,7 @@ public class SoftwareEngineer extends TechnicalEmployee implements CanCheckInCod
     
     
 //  SOFTWARE ENGINEER CLASS METHODS: TOTAL - 06
+    @Override
     public boolean checkInCode() {
     	if(this.manager.approveCheckIn(this)) {
     		this.setSuccessfulCheckIns(getSuccessfulCheckIns() + 1);;
@@ -92,4 +93,5 @@ public class SoftwareEngineer extends TechnicalEmployee implements CanCheckInCod
     private void setSuccessfulCheckIns(int successfulCheckIns) {
     	this.successfulCheckIns = successfulCheckIns;
     }
+    
 }
